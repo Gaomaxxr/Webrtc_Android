@@ -68,7 +68,7 @@ public class WebRtcActivity extends AppCompatActivity implements View.OnClickLis
     private List<String> streamList;
     private WebSocketClient webSocketClient;
 
-    // 创建线程
+    // 创建线程，在主线程中初始化Handler，用来接收从子线程发到主线程的消息
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
@@ -149,6 +149,8 @@ public class WebRtcActivity extends AppCompatActivity implements View.OnClickLis
     private void connectionWebsocket() {
         try {
             webSocketClient = new WebSocketClient(URI.create(Constant.URL)) {
+
+                // onOpen()方法在websocket连接开启时调用
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
                     setText("已连接");
@@ -157,6 +159,7 @@ public class WebRtcActivity extends AppCompatActivity implements View.OnClickLis
                     webSocketClient.send(new Gson().toJson(model));
                 }
 
+                // onMessage()方法在接收到消息时调用
                 @Override
                 public void onMessage(String message) {
                     Log.e(TAG, "onMessage == " + message);
@@ -215,12 +218,14 @@ public class WebRtcActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 }
 
+                // onClose()方法在连接断开时调用
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
                     setText("已关闭");
                     Log.e(TAG, "onClose == code " + code + " reason == " + reason + " remote == " + remote);
                 }
 
+                // onError()方法在连接出错时调用
                 @Override
                 public void onError(Exception ex) {
                     setText("onError == " + ex.getMessage());
